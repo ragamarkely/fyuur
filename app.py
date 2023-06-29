@@ -249,25 +249,34 @@ def create_venue_submission():
     # TODO: on unsuccessful db insert, flash an error instead.
     # e.g., flash("An error occurred. Venue " + data.name + " could not be listed.")
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-    try:
-        venue = Venue(
-            name=request.form["name"],
-            city=request.form["city"],
-            state=request.form["state"],
-            address=request.form["address"],
-            phone=request.form["phone"],
-            genres=request.form.getlist("genres"),
-            facebook_link=request.form["facebook_link"]
-        )
+    form = VenueForm()
+    if form.validate_on_submit():
+        try:
+            venue = Venue(
+                name=request.form["name"],
+                city=request.form["city"],
+                state=request.form["state"],
+                address=request.form["address"],
+                phone=request.form["phone"],
+                image_link=request.form["image_link"],
+                facebook_link=request.form["facebook_link"],
+                genres=request.form.getlist("genres"),
+                website=request.form["website_link"],
+                seeking_talent=True if "seeking_talent" in request.form else False,
+                seeking_description=request.form["seeking_description"]
+            )
 
-        db.session.add(venue)
-        db.session.commit()
-        flash(f"Venue {request.form['name']} was successfully listed.")
-    except:
-        db.session.rollback()
-        flash(f"An error occurred: Venue {request.form['name']} could not be listed.")
-    finally:
-        db.session.close()           
+            db.session.add(venue)
+            db.session.commit()
+            flash(f"Venue {request.form['name']} was successfully listed.")
+        except:
+            db.session.rollback()
+            flash(f"An error occurred: Venue {request.form['name']} could not be listed.")
+        finally:
+            db.session.close()       
+    else:
+        for field, message in form.errors.items():
+            flash(f"Error in the entry for {field}: {str(message)}")    
 
     return render_template("pages/home.html")
 
@@ -499,27 +508,32 @@ def create_artist_submission():
     # on successful db insert, flash success
     # TODO: on unsuccessful db insert, flash an error instead.
     # e.g., flash("An error occurred. Artist " + data.name + " could not be listed.")
-    try:
-        artist = Artist(
-            name=request.form["name"],
-            city=request.form["city"],
-            state=request.form["state"],
-            phone=request.form["phone"],
-            genres=request.form.getlist("genres"),
-            website=request.form["website_link"],
-            image_link=request.form["image_link"],
-            facebook_link=request.form["facebook_link"],
-            seeking_venue=True if "seeking_venue" in request.form else False,
-            seeking_description=request.form["seeking_description"]
-        )
-        db.session.add(artist)
-        db.session.commit()
-        flash(f"Artist {request.form['name']} was successfully listed.")
-    except:
-        db.session.rollback()
-        flash(f"An error occurred: Artist {request.form['name']} could not be listed.")
-    finally:
-        db.session.close()
+    form = ArtistForm()
+    if form.validate_on_submit():
+        try:
+            artist = Artist(
+                name=request.form["name"],
+                city=request.form["city"],
+                state=request.form["state"],
+                phone=request.form["phone"],
+                genres=request.form.getlist("genres"),
+                website=request.form["website_link"],
+                image_link=request.form["image_link"],
+                facebook_link=request.form["facebook_link"],
+                seeking_venue=True if "seeking_venue" in request.form else False,
+                seeking_description=request.form["seeking_description"]
+            )
+            db.session.add(artist)
+            db.session.commit()
+            flash(f"Artist {request.form['name']} was successfully listed.")
+        except:
+            db.session.rollback()
+            flash(f"An error occurred: Artist {request.form['name']} could not be listed.")
+        finally:
+            db.session.close()
+    else:
+        for field, message in form.errors.items():
+            flash(f"Error in the entry for {field}: {str(message)}") 
 
     return render_template("pages/home.html")
 
